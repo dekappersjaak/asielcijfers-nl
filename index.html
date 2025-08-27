@@ -1,164 +1,214 @@
 <!doctype html>
-<html lang="nl">
+<html lang="nl" class="no-js">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Asielcijfers Nederland – Live teller & trends (IND/CBS)</title>
-
-  <!-- SEO basics -->
-  <meta name="description" content="Live asielzoekers-teller voor Nederland met officiële bronnen (IND, CBS). Bekijk actuele instroom, trends per maand, top nationaliteiten en kaartvisualisatie.">
-  <meta name="keywords" content="asielcijfers Nederland live, asielzoekers teller, IND cijfers, CBS open data, asielaanvragen, maandelijkse instroom, top nationaliteiten">
-  <link rel="canonical" href="https://jouwdomein.nl/" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Asielzoekersplatform – Samen maken we verschil</title>
+  <meta name="description" content="Coole, overzichtelijke counterwebsite voor een asielzoekersplatform. Live counters, toegankelijk design, donker/licht modus, en micro-animaties." />
+  <meta name="theme-color" content="#0f172a" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="Asielcijfers Nederland – Live teller & trends">
-  <meta property="og:description" content="Live teller, maandcijfers, lijnchart en kaart. Gebaseerd op IND/CBS.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://jouwdomein.nl/">
-  <meta property="og:image" content="https://jouwdomein.nl/social-preview.png">
+  <meta property="og:title" content="Asielzoekersplatform – Samen maken we verschil" />
+  <meta property="og:description" content="Counters, statistieken en een empathische, toegankelijk design." />
+  <meta property="og:type" content="website" />
 
-  <!-- JSON-LD structured data -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Asielcijfers Nederland – Live teller",
-    "url": "https://jouwdomein.nl/",
-    "description": "Live asielzoekers-teller en trends, gebaseerd op officiële data (IND, CBS)."
-  }
-  </script>
+  <!-- Fonts (2025-look: Montserrat + Inter) -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
 
   <!-- Styles -->
-  <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="styles.css" />
 
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+  <!-- CountUp.js (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/countup.js@2.8.0/dist/countUp.umd.js" defer></script>
 
-  <!-- Leaflet -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""
-  />
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-    defer
-  ></script>
+  <!-- Script -->
+  <script defer src="script.js"></script>
 
-  <!-- Leaflet.heat (heatmap plugin) -->
-  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js" defer></script>
-
-  <!-- PapaParse (CSV parsing example) -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-
-  <!-- AdSense placeholder (vervang je client-id) -->
-  <!--
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
-  -->
-
-  <!-- App logic -->
-  <script src="assets/app.js" defer></script>
+  <!-- Fallback wanneer JS uit staat -->
+  <noscript>
+    <style>
+      .js-only { display:none !important; }
+      html { scroll-behavior:auto !important; }
+    </style>
+    <div role="status" aria-live="polite" style="background:#fff3cd;color:#111;padding:.75rem 1rem;text-align:center;">
+      JavaScript staat uit. We tonen statische cijfers zonder animaties.
+    </div>
+  </noscript>
 </head>
 <body>
-  <header class="site-header">
+  <a class="skip-link" href="#main">Direct naar inhoud</a>
+
+  <header class="site-header" role="banner">
     <div class="container header-inner">
-      <div class="brand">
-        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg>
-        <span>Asielcijfers NL</span>
-      </div>
+      <a class="brand" href="#home" aria-label="Ga naar start">
+        <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l9 6v8l-9 6-9-6V8l9-6z"/></svg>
+        <span>Asielzoekersplatform</span>
+      </a>
 
-      <div class="header-actions">
-        <button id="themeToggle" class="btn btn-ghost" aria-label="Schakel donker modus">🌙</button>
-        <button id="reloadBtn" class="btn" aria-label="Herlaad data">Herlaad data</button>
-      </div>
-    </div>
-
-    <!-- Ad banner placeholder -->
-    <div class="ad-banner" role="complementary" aria-label="Advertentie">
-      <!-- Voorbeeld Google AdSense blok (vervang data-ad-client en data-ad-slot) -->
-      <!--
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-XXXXXXXXXXXXXXX"
-           data-ad-slot="YYYYYYYYYY"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-      -->
-      <div class="ad-placeholder">Advertentieplaatsing (728×90 / responsief)</div>
+      <nav class="nav" aria-label="Hoofdnavigatie">
+        <button class="nav-toggle" aria-expanded="false" aria-controls="nav-list">
+          <span class="sr-only">Menu</span>
+          ☰
+        </button>
+        <ul id="nav-list" class="nav-list">
+          <li><a href="#home" aria-current="page">Home</a></li>
+          <li class="has-sub">
+            <button class="sub-toggle" aria-expanded="false" aria-haspopup="true">Over ons</button>
+            <ul class="sub">
+              <li><a href="#missie">Missie & waarden</a></li>
+              <li><a href="#impact">Onze impact</a></li>
+            </ul>
+          </li>
+          <li><a href="#stats">Statistieken</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><button id="themeToggle" class="ghost" aria-label="Schakel donker/licht modus">🌓</button></li>
+          <li><a class="cta" href="#donate">Steun ons</a></li>
+        </ul>
+      </nav>
     </div>
   </header>
 
-  <main class="container">
-    <section class="hero">
-      <h1>Asielaanvragen in <span id="ytdYear">2025</span></h1>
-      <div class="big-counter" id="totalCounter" aria-live="polite">38.000</div>
-      <p class="update-note">
-        Gebaseerd op officiële data (IND/CBS). Laatste update: <span id="lastUpdated">—</span>
-      </p>
-    </section>
+  <main id="main">
+    <!-- HERO -->
+    <section id="home" class="hero" aria-label="Hero">
+      <picture>
+        <!-- WebP placeholder voorbeeld (vervang later door echte foto) -->
+        <source srcset="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1400&q=60" type="image/jpeg">
+        <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1400&q=60"
+             alt="Een diverse groep mensen die elkaar ondersteunt, hoopvolle sfeer"
+             width="1400" height="700" loading="eager" decoding="async">
+      </picture>
 
-    <section class="kpis">
-      <div class="kpi-card">
-        <div class="kpi-title">Maandelijkse instroom</div>
-        <div class="kpi-value" id="monthlyValue">—</div>
-        <div class="kpi-sub" id="monthlyLabel">Laatste maand</div>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-title">Verschil t.o.v. vorig jaar</div>
-        <div class="kpi-value" id="yoyDelta">—</div>
-        <div class="kpi-sub" id="yoyDeltaPct">—</div>
-      </div>
-
-      <div class="kpi-card span2">
-        <div class="kpi-title">Top 5 nationaliteiten</div>
-        <ol class="top-list" id="topNationalities"></ol>
-      </div>
-    </section>
-
-    <section class="viz">
-      <div class="viz-card">
-        <div class="viz-header">
-          <h2>Trends laatste 12 maanden</h2>
+      <div class="hero-copy container">
+        <h1>Samen maken we verschil</h1>
+        <p>Een empathische blik op cijfers: transparant, toegankelijk en menselijk. Dit platform laat zien wat we sámen bereiken.</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#stats">Bekijk de cijfers</a>
+          <a class="btn" href="#missie">Lees meer</a>
         </div>
-        <canvas id="trendChart" height="120" aria-label="Lijnchart trends"></canvas>
       </div>
 
-      <div class="viz-card">
-        <div class="viz-header">
-          <h2>Kaart: instroom per regio</h2>
-          <div class="map-controls">
-            <label><input type="checkbox" id="toggleHeat" checked> Heatmap</label>
-            <label><input type="checkbox" id="toggleMarkers" checked> Markers</label>
-          </div>
+      <!-- subtiele parallax overlay -->
+      <div class="hero-overlay" aria-hidden="true"></div>
+    </section>
+
+    <!-- COUNTERS / BENTO GRID -->
+    <section id="stats" class="stats-section" aria-labelledby="stats-title">
+      <div class="container">
+        <h2 id="stats-title">Onze cijfers</h2>
+        <p class="lead">Geüpdatet maandelijks. De teller loopt op zodra je dit blok ziet (toegankelijk voor screenreaders zonder overmatige announcements).</p>
+
+        <div class="bento">
+          <!-- 1 -->
+          <article class="card" aria-labelledby="c1-title">
+            <div class="card-body">
+              <h3 id="c1-title">Asielzoekers geholpen</h3>
+              <div class="counter-wrap">
+                <span class="counter" data-target="10000" data-duration="2.5" aria-label="Tienduizend">10,000</span>
+                <span class="suffix" aria-hidden="true">+</span>
+              </div>
+              <p class="muted">Sinds 2017</p>
+            </div>
+          </article>
+
+          <!-- 2 -->
+          <article class="card" aria-labelledby="c2-title">
+            <div class="card-body">
+              <h3 id="c2-title">Vrijwilligers actief</h3>
+              <div class="counter-wrap">
+                <span class="counter" data-target="500" data-duration="2" aria-label="Vijfhonderd">500</span>
+              </div>
+              <p class="muted">Landelijk netwerk</p>
+            </div>
+          </article>
+
+          <!-- 3 -->
+          <article class="card" aria-labelledby="c3-title">
+            <div class="card-body">
+              <h3 id="c3-title">Aanvragen verwerkt</h3>
+              <div class="counter-wrap">
+                <span class="counter" data-target="26500" data-duration="3" aria-label="Zesentwintigduizend vijfhonderd">26,500</span>
+              </div>
+              <p class="muted">Begeleiding & doorverwijzing</p>
+            </div>
+          </article>
+
+          <!-- 4 (accent) -->
+          <article class="card accent" aria-labelledby="c4-title">
+            <div class="card-body">
+              <h3 id="c4-title">Partners</h3>
+              <div class="counter-wrap">
+                <span class="counter" data-target="72" data-duration="2" aria-label="Tweeënzeventig">72</span>
+              </div>
+              <p class="muted">Gemeenten & organisaties</p>
+              <a class="btn ghost js-only" href="#contact">Word partner</a>
+            </div>
+          </article>
         </div>
-        <div id="map" role="region" aria-label="Kaart met regionale instroom"></div>
       </div>
     </section>
 
-    <section class="sources">
-      <h3>Bronnen & disclaimer</h3>
-      <p>
-        Deze site toont een live teller en visualisaties op basis van openbare, officiële datasets.
-        Controleer definities en methodologie bij de bron:
-        <a href="https://www.ind.nl/over-ind/cijfers-publicaties" target="_blank" rel="noopener">IND – Cijfers & publicaties</a>,
-        <a href="https://www.cbs.nl" target="_blank" rel="noopener">CBS – Open data</a>.
-      </p>
-      <p class="disclaimer">
-        Let op: publicatiecycli en definities kunnen verschillen. De cijfers kunnen (achteraf) worden bijgesteld.
-        Gebruik dit dashboard indicatief. “Asielaanvragen” betreft doorgaans eerste en mogelijk herhaalde aanvragen; details per bron.
-      </p>
-      <ul id="sourceLinks" class="source-links"></ul>
+    <!-- MISSIE / IMPACT -->
+    <section id="missie" class="content-section">
+      <div class="container content-grid">
+        <div>
+          <h2>Missie & waarden</h2>
+          <p>We geloven in een warme, efficiënte en mensgerichte ondersteuning: duidelijke informatie, snelle doorstroom en gelijke kansen.</p>
+          <ul class="tick">
+            <li>Transparant & toetsbaar</li>
+            <li>Toegankelijk ontwerp (WCAG 2.1 AA)</li>
+            <li>Duurzame keuzes in techniek</li>
+          </ul>
+          <a class="btn" href="#contact">Neem contact op</a>
+        </div>
+        <div class="illus" aria-hidden="true">
+          <!-- subtiele 3D-achtige illustratie vibe met eenvoudige SVG -->
+          <svg viewBox="0 0 200 200" width="100%" height="100%">
+            <defs>
+              <linearGradient id="g" x1="0" x2="1">
+                <stop offset="0" stop-color="#7dd3fc"/>
+                <stop offset="1" stop-color="#fca5a5"/>
+              </linearGradient>
+            </defs>
+            <circle cx="100" cy="100" r="90" fill="url(#g)"/>
+            <rect x="50" y="70" width="100" height="60" rx="12" fill="rgba(255,255,255,.7)"/>
+            <circle cx="80" cy="100" r="12" fill="#0ea5e9"/>
+            <circle cx="120" cy="100" r="12" fill="#fb923c"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT / CTA -->
+    <section id="contact" class="contact-section" aria-label="Contact">
+      <div class="container">
+        <h2>Contact & steun</h2>
+        <p>Wil je meehelpen, doneren of samenwerken? Stuur ons een bericht.</p>
+        <form class="contact-form" action="#" method="post" aria-describedby="contact-help">
+          <label>
+            <span>Naam</span>
+            <input type="text" name="name" autocomplete="name" required>
+          </label>
+          <label>
+            <span>Email</span>
+            <input type="email" name="email" autocomplete="email" required>
+          </label>
+          <label class="span2">
+            <span>Bericht</span>
+            <textarea name="message" rows="4" required></textarea>
+          </label>
+          <p id="contact-help" class="muted">We antwoorden meestal binnen 2–3 werkdagen.</p>
+          <button class="btn primary" type="submit">Verstuur</button>
+          <a id="donate" class="btn" href="#" aria-label="Doneer">Steun ons</a>
+        </form>
+      </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <small>© <span id="yearNow"></span> Asielcijfers NL • Gemaakt met Chart.js & Leaflet • <a href="#" id="downloadData">Download data (JSON)</a></small>
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer-inner">
+      <small>© <span id="yearNow"></span> Asielzoekersplatform • Design met empathie • <a href="#stats">Naar boven ↑</a></small>
     </div>
   </footer>
 </body>
