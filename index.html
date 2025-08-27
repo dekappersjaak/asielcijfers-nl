@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Asielcijfers Nederland – Live teller & trends (IND/CBS)</title>
+
+  <!-- SEO basics -->
+  <meta name="description" content="Live asielzoekers-teller voor Nederland met officiële bronnen (IND, CBS). Bekijk actuele instroom, trends per maand, top nationaliteiten en kaartvisualisatie.">
+  <meta name="keywords" content="asielcijfers Nederland live, asielzoekers teller, IND cijfers, CBS open data, asielaanvragen, maandelijkse instroom, top nationaliteiten">
+  <link rel="canonical" href="https://jouwdomein.nl/" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Asielcijfers Nederland – Live teller & trends">
+  <meta property="og:description" content="Live teller, maandcijfers, lijnchart en kaart. Gebaseerd op IND/CBS.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jouwdomein.nl/">
+  <meta property="og:image" content="https://jouwdomein.nl/social-preview.png">
+
+  <!-- JSON-LD structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Asielcijfers Nederland – Live teller",
+    "url": "https://jouwdomein.nl/",
+    "description": "Live asielzoekers-teller en trends, gebaseerd op officiële data (IND, CBS)."
+  }
+  </script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="assets/style.css" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+    defer
+  ></script>
+
+  <!-- Leaflet.heat (heatmap plugin) -->
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js" defer></script>
+
+  <!-- PapaParse (CSV parsing example) -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+
+  <!-- AdSense placeholder (vervang je client-id) -->
+  <!--
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  -->
+
+  <!-- App logic -->
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg>
+        <span>Asielcijfers NL</span>
+      </div>
+
+      <div class="header-actions">
+        <button id="themeToggle" class="btn btn-ghost" aria-label="Schakel donker modus">🌙</button>
+        <button id="reloadBtn" class="btn" aria-label="Herlaad data">Herlaad data</button>
+      </div>
+    </div>
+
+    <!-- Ad banner placeholder -->
+    <div class="ad-banner" role="complementary" aria-label="Advertentie">
+      <!-- Voorbeeld Google AdSense blok (vervang data-ad-client en data-ad-slot) -->
+      <!--
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXX"
+           data-ad-slot="YYYYYYYYYY"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      -->
+      <div class="ad-placeholder">Advertentieplaatsing (728×90 / responsief)</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>Asielaanvragen in <span id="ytdYear">2025</span></h1>
+      <div class="big-counter" id="totalCounter" aria-live="polite">38.000</div>
+      <p class="update-note">
+        Gebaseerd op officiële data (IND/CBS). Laatste update: <span id="lastUpdated">—</span>
+      </p>
+    </section>
+
+    <section class="kpis">
+      <div class="kpi-card">
+        <div class="kpi-title">Maandelijkse instroom</div>
+        <div class="kpi-value" id="monthlyValue">—</div>
+        <div class="kpi-sub" id="monthlyLabel">Laatste maand</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-title">Verschil t.o.v. vorig jaar</div>
+        <div class="kpi-value" id="yoyDelta">—</div>
+        <div class="kpi-sub" id="yoyDeltaPct">—</div>
+      </div>
+
+      <div class="kpi-card span2">
+        <div class="kpi-title">Top 5 nationaliteiten</div>
+        <ol class="top-list" id="topNationalities"></ol>
+      </div>
+    </section>
+
+    <section class="viz">
+      <div class="viz-card">
+        <div class="viz-header">
+          <h2>Trends laatste 12 maanden</h2>
+        </div>
+        <canvas id="trendChart" height="120" aria-label="Lijnchart trends"></canvas>
+      </div>
+
+      <div class="viz-card">
+        <div class="viz-header">
+          <h2>Kaart: instroom per regio</h2>
+          <div class="map-controls">
+            <label><input type="checkbox" id="toggleHeat" checked> Heatmap</label>
+            <label><input type="checkbox" id="toggleMarkers" checked> Markers</label>
+          </div>
+        </div>
+        <div id="map" role="region" aria-label="Kaart met regionale instroom"></div>
+      </div>
+    </section>
+
+    <section class="sources">
+      <h3>Bronnen & disclaimer</h3>
+      <p>
+        Deze site toont een live teller en visualisaties op basis van openbare, officiële datasets.
+        Controleer definities en methodologie bij de bron:
+        <a href="https://www.ind.nl/over-ind/cijfers-publicaties" target="_blank" rel="noopener">IND – Cijfers & publicaties</a>,
+        <a href="https://www.cbs.nl" target="_blank" rel="noopener">CBS – Open data</a>.
+      </p>
+      <p class="disclaimer">
+        Let op: publicatiecycli en definities kunnen verschillen. De cijfers kunnen (achteraf) worden bijgesteld.
+        Gebruik dit dashboard indicatief. “Asielaanvragen” betreft doorgaans eerste en mogelijk herhaalde aanvragen; details per bron.
+      </p>
+      <ul id="sourceLinks" class="source-links"></ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>© <span id="yearNow"></span> Asielcijfers NL • Gemaakt met Chart.js & Leaflet • <a href="#" id="downloadData">Download data (JSON)</a></small>
+    </div>
+  </footer>
+</body>
+</html>
