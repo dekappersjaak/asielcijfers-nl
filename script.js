@@ -43,12 +43,20 @@
       { name: "Marokko", share: 4 },
       { name: "Onbekend/overig", share: 13 }
     ],
+    // Per provincie data (fictieve schatting). 'province' gebruikt i.p.v. 'name'.
     regions: [
-      { name: "Groningen", lat: 53.2194, lng: 6.5665, value: 500 },
-      { name: "Utrecht", lat: 52.0907, lng: 5.1214, value: 300 },
-      { name: "Zuid-Holland", lat: 52.0030, lng: 4.3700, value: 600 },
-      { name: "Noord-Brabant", lat: 51.4827, lng: 5.2322, value: 550 },
-      { name: "Gelderland", lat: 52.0452, lng: 5.8717, value: 480 }
+      { province: "Groningen",      lat: 53.2194, lng: 6.5665, value: 850 },
+      { province: "Friesland",      lat: 53.1642, lng: 5.7818, value: 620 },
+      { province: "Drenthe",        lat: 52.9476, lng: 6.6231, value: 540 },
+      { province: "Overijssel",     lat: 52.4380, lng: 6.5016, value: 770 },
+      { province: "Flevoland",      lat: 52.5279, lng: 5.5953, value: 460 },
+      { province: "Gelderland",     lat: 52.0452, lng: 5.8717, value: 980 },
+      { province: "Utrecht",        lat: 52.0907, lng: 5.1214, value: 720 },
+      { province: "Noord-Holland",  lat: 52.3874, lng: 4.6462, value: 1280 },
+      { province: "Zuid-Holland",   lat: 52.0030, lng: 4.3700, value: 1450 },
+      { province: "Zeeland",        lat: 51.4963, lng: 3.8494, value: 350 },
+      { province: "Noord-Brabant",  lat: 51.4827, lng: 5.2322, value: 1200 },
+      { province: "Limburg",        lat: 51.4427, lng: 6.0609, value: 690 }
     ],
     sources: [
       "https://www.ind.nl/over-ind/cijfers-publicaties",
@@ -181,11 +189,20 @@
   }
 
   // Build Pie Chart with Chart.js
+  // Store the current loaded data to reuse across interactions
+  let currentData = null;
+
   let pie;
-  function buildPie(countries) {
+  /**
+   * Build the pie chart for herkomstlanden. Accepts a list of countries
+   * and a scope ('ytd' or 'month'), updates the scope label accordingly.
+   * @param {Array} countries - array of {name/share}
+   * @param {string} scope - 'ytd' or 'month'
+   */
+  function buildPie(countries, scope = 'ytd') {
     const ctx = $("#pieChart").getContext("2d");
     if (pie) pie.destroy();
-    const labels = countries.map(c => c.name);
+    const labels = countries.map(c => c.name || c.country);
     const values = countries.map(c => c.share);
     pie = new Chart(ctx, {
       type: 'pie',
@@ -196,12 +213,14 @@
       options: {
         animation: { duration: 600 },
         plugins: {
-          legend: { position: 'bottom', labels: { color: '#fff' } },
+          legend: { position: 'bottom', labels: { color: '#111' } },
           tooltip: {
             callbacks: {
               label: ctx => {
                 const pct = ctx.parsed;
-                const total = Number($("#totalCounter").textContent.replace(/\D/g, '')) || FALLBACK.total;
+                // Determine total based on current scope: use base total for YTD
+                const totalText = $("#totalCounter").textContent.replace(/\D/g, '');
+                const total = Number(totalText) || (currentData?.total ?? FALLBACK.total);
                 const abs = Math.round(total * (pct / 100));
                 return `${ctx.label}: ${pct}% (${fmt.format(abs)})`;
               }
@@ -210,6 +229,11 @@
         }
       }
     });
+    // Update scope label
+    const labelEl = document.getElementById('scopeLabel');
+    if (labelEl) {
+      labelEl.textContent = scope === 'ytd' ? '(YTD 2025)' : '(laatste maand)';
+    }
   }
 
   // Build Line Chart
@@ -228,8 +252,8 @@
       options: {
         plugins: { legend: { display: false } },
         scales: {
-          x: { ticks: { color: '#fff' } },
-          y: { beginAtZero: true, ticks: { color: '#fff', callback: v => fmt.format(v) } }
+          x: { ticks: { color: '#111' } },
+          y: { beginAtZero: true, ticks: { color: '#111', callback: v => fmt.format(v) } }
         }
       }
     });
@@ -248,15 +272,43 @@
     }
     if (markers) markers.clearLayers();
     markers = L.layerGroup().addTo(map);
+    // Scale marker size relative to max value for visual variety
+    const maxVal = Math.max(...regions.map(r => r.value || 0), 1);
     regions.forEach(r => {
-      const circle = L.circleMarker([r.lat, r.lng], {
-        radius: Math.min(24, 6 + (r.value || 0) / 80),
-        color: '#fff', weight: 1,
-        fillColor: '#2E9AFF', fillOpacity: 0.8
-      }).bindTooltip(`<strong>${r.name}</strong><br>${fmt.format(r.value)} aanvragen`);
-      markers.addLayer(circle);
+      const radius = 6 + 18 * (r.value || 0) / maxVal; // scale 6–24px
+      const marker = L.circleMarker([r.lat, r.lng], {
+        radius,
+        color: '#334155', weight: 1,
+        fillColor: '#4A86FF', fillOpacity: 0.75
+      }).bindTooltip(
+        `<strong>${r.province || r.name}</strong><br>${fmt.format(r.value || 0)} personen`,
+        { direction: 'top' }
+      );
+      markers.addLayer(marker);
     });
     setTimeout(() => map.invalidateSize(), 200);
+  }
+
+  /**
+   * Render a sortable table of provinces and their counts into #provTable
+   * @param {Array} regions - array of {province, value}
+   */
+  function renderProvinceTable(regions) {
+    const tbody = document.getElementById('provTable');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    const rows = [...regions].sort((a, b) => (b.value || 0) - (a.value || 0));
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      const td1 = document.createElement('td');
+      td1.textContent = r.province || r.name;
+      const td2 = document.createElement('td');
+      td2.className = 'num';
+      td2.textContent = fmt.format(r.value || 0);
+      tr.appendChild(td1);
+      tr.appendChild(td2);
+      tbody.appendChild(tr);
+    });
   }
 
   // Main render function: loads data, simulates growth, updates UI and charts
@@ -268,6 +320,9 @@
     if (remote && typeof remote === 'object') {
       data = { ...data, ...remote };
     }
+
+    // Update global reference to current data
+    currentData = data;
 
     // Use base counts directly; continuous ticker will handle daily growth
     const baseTotal  = Math.max(0, Number(data.total));
@@ -299,9 +354,11 @@
 
     // Charts and map
     await monthlyUpdate(data);
-    buildPie(data.countries || FALLBACK.countries);
+    // Pie chart (default to YTD)
+    buildPie((data.countries || FALLBACK.countries), 'ytd');
     buildLine(data.monthly || FALLBACK.monthly);
     buildMap(data.regions || FALLBACK.regions);
+    renderProvinceTable(data.regions || FALLBACK.regions);
 
     // Save to cache
     saveCached({ ...data, total: baseTotal, statusholders: baseStatus });
@@ -333,6 +390,16 @@
     setInterval(pulseStatus, 10000);
     // Auto refresh daily (simulate)
     setInterval(loadAndRender, ONE_DAY_MS);
+
+    // Scope selector for herkomstlanden chart
+    const scopeSel = document.getElementById('scopeSelect');
+    if (scopeSel) {
+      scopeSel.addEventListener('change', () => {
+        const scope = scopeSel.value;
+        const countries = (currentData?.countries || FALLBACK.countries);
+        buildPie(countries, scope);
+      });
+    }
   }
 
   document.addEventListener("DOMContentLoaded", async () => {

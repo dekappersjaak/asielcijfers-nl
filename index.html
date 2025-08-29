@@ -14,7 +14,8 @@
   <meta property="og:title" content="Live asielzoekers teller Nederland" />
   <meta property="og:description" content="Real-time ogende counters voor asielaanvragen en statushouders (schattingen), met maandelijks geüpdatete officiële data." />
   <meta property="og:type" content="website" />
-  <meta name="theme-color" content="#1C2526" />
+  <!-- Update theme color for light mode -->
+  <meta name="theme-color" content="#F5F7F9" />
 
   <!-- Styles -->
   <link rel="stylesheet" href="styles.css" />
@@ -76,7 +77,16 @@
     <!-- CHARTS -->
     <section class="grid">
       <article class="card" aria-labelledby="pie-title">
-        <h3 id="pie-title">Top herkomstlanden</h3>
+        <!-- Herkomstlanden met scope indicator -->
+        <h3 id="pie-title" style="margin-bottom:.25rem;">
+          Herkomstlanden <span id="scopeLabel">(YTD 2025)</span>
+        </h3>
+        <!-- Selectie tussen totaal en maand -->
+        <label class="sr-only" for="scopeSelect">Selecteer weergave</label>
+        <select id="scopeSelect" class="select">
+          <option value="ytd" selected>Totaal (YTD 2025)</option>
+          <option value="month">Laatste maand (officiële)</option>
+        </select>
         <canvas id="pieChart" height="240" aria-label="Taartdiagram herkomstlanden"></canvas>
       </article>
 
@@ -91,6 +101,22 @@
       <article class="card span2" aria-labelledby="map-title">
         <h3 id="map-title">Aanvragen per regio (fictieve data)</h3>
         <div id="map" aria-label="Kaart van Nederland met markers"></div>
+      </article>
+    </section>
+
+    <!-- Province table -->
+    <section class="grid">
+      <article class="card span2" aria-labelledby="prov-title">
+        <h3 id="prov-title">Per provincie (aantal personen – fictieve schatting)</h3>
+        <div class="table-wrap">
+          <table class="table" aria-describedby="prov-title">
+            <thead>
+              <tr><th>Provincie</th><th class="num">Aantal</th></tr>
+            </thead>
+            <tbody id="provTable"></tbody>
+          </table>
+        </div>
+        <p class="muted">Opmerking: provinciecijfers zijn placeholders; gebruik je maandelijkse update om deze te voeden.</p>
       </article>
     </section>
 

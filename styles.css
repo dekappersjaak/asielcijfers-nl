@@ -5,16 +5,17 @@
  */
 
 :root{
-  --bg:#1C2526;            /* donkere achtergrond */
-  --text:#FFFFFF;          /* witte tekst */
-  --muted:#B8C3C4;         /* gedempte kleur */
-  --card:#202B2D;          /* kaart achtergrond */
-  --border:#2E3B3C;        /* randen */
-  --accent:#007BFF;        /* blauw accent (vertrouwen) */
-  --accent-2:#61A6FF;      /* lichtere blauw tint */
-  --danger:#FF4D4D;        /* rood voor waarschuwingen */
+  /* Licht kleurenschema voor betere leesbaarheid */
+  --bg:#F5F7F9;            /* lichte achtergrond */
+  --text:#111111;          /* donkere tekst */
+  --muted:#60696F;         /* gedempte tekstkleur */
+  --card:#FFFFFF;          /* kaart achtergrond */
+  --border:#E3E7EA;        /* subtiele border */
+  --accent:#0B5FFF;        /* blauw accent voor vertrouwen */
+  --accent-2:#4A86FF;      /* lichtere blauw tint */
+  --danger:#D64545;        /* rood voor waarschuwingen */
   --radius:14px;
-  --shadow:0 10px 30px rgba(0,0,0,.25);
+  --shadow:0 6px 22px rgba(17,27,33,.08);
 }
 
 *{ box-sizing:border-box }
@@ -86,7 +87,7 @@ body{
 
 /* Disclaimer */
 .disclaimer{
-  background:#243033;
+  background:#F0F2F4;
   border:1px solid var(--border);
   border-radius:var(--radius);
   padding:.8rem;
@@ -127,7 +128,7 @@ body{
 }
 .counter.big{
   font-size: clamp(2.2rem, 7vw, 3.4rem);
-  color: #fff;
+  color: var(--text);
 }
 .today-ticker{
   margin-top:.35rem;
@@ -146,8 +147,8 @@ body{
 .btn{
   appearance:none;
   border:1px solid var(--border);
-  background:#1f2a2c;
-  color:#fff;
+  background:#ECF0F3;
+  color:var(--text);
   padding:.6rem .9rem;
   border-radius:10px;
   cursor:pointer;
@@ -159,7 +160,7 @@ body{
 }
 .btn:hover{
   transform:translateY(-1px);
-  background:#273538;
+  background:#E0E6EA;
 }
 .btn.small{
   padding:.4rem .7rem;
@@ -177,7 +178,7 @@ body{
 
 /* Links */
 a{
-  color:#fff;
+  color:var(--accent);
   text-decoration:none;
 }
 a:hover{
@@ -207,6 +208,56 @@ a:hover{
   font-size: clamp(3rem, 9.5vw, 6rem);
   line-height: 1.05;
   letter-spacing: .5px;
-  color: #fff;
+  color: var(--text);
   text-shadow: 0 0 20px rgba(97,166,255,.18);
+}
+
+/* Select dropdown for pie chart scope */
+.select{
+  appearance:none;
+  background:#FFFFFF;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:.45rem .75rem;
+  color:var(--text);
+  font-size:.9rem;
+  margin-bottom:.5rem;
+}
+
+/* Table styling for provinces */
+.table-wrap{ overflow-x:auto; }
+
+.table{
+  width:100%;
+  border-collapse:collapse;
+}
+.table th,.table td{
+  padding:.55rem .6rem;
+  border-bottom:1px solid var(--border);
+}
+.table th{
+  text-align:left;
+  color:var(--muted);
+  font-weight:600;
+}
+.table .num{
+  text-align:right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Muted paragraph for notes */
+.muted{
+  color:var(--muted);
+  margin-top:.4rem;
+}
+
+/* Screen reader only labels */
+.sr-only{
+  position:absolute;
+  left:-9999px;
+  top:auto;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  z-index:-1;
 }
