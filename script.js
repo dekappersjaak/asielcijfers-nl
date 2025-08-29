@@ -79,6 +79,13 @@
     return Math.max(0, Math.round((d1 - d0) / ONE_DAY_MS));
   }
 
+  // Return the start of today (midnight) as a Date object
+  function startOfToday() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
   // Ease out cubic for smooth animations
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
@@ -96,6 +103,36 @@
       if (p < 1) requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
+  }
+
+  /**
+   * Start a continuous ticker on an element.
+   * The element's text will update smoothly throughout the day.
+   * It displays baseToday + (perDay * fraction of day elapsed).
+   * Respects reduced motion preferences by updating without animation.
+   * @param {Object} param0 - configuration object
+   * @param {HTMLElement} param0.el - the element whose text will be updated
+   * @param {number} param0.baseToday - base value at start of day
+   * @param {number} param0.perDay - total increment per day
+   */
+  function startContinuousTicker({ el, baseToday, perDay }) {
+    if (!el) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let lastVal = '';
+    function update() {
+      const now = new Date();
+      const frac = Math.max(0, Math.min(1, (now - startOfToday()) / ONE_DAY_MS));
+      const value = baseToday + perDay * frac;
+      const formatted = fmt.format(Math.floor(value));
+      if (formatted !== lastVal) {
+        el.textContent = formatted;
+        lastVal = formatted;
+      }
+      if (!reduceMotion) {
+        requestAnimationFrame(update);
+      }
+    }
+    update();
   }
 
   // Pulsing effect for statushouders counter every 10s
@@ -232,10 +269,9 @@
       data = { ...data, ...remote };
     }
 
-    // Simulate growth since last update
-    const daysSince = dayDiff(new Date().toISOString());
-    const simulatedTotal  = Math.max(0, Number(data.total)) + daysSince * SIM_INC_REQUESTS;
-    const simulatedStatus = Math.max(0, Number(data.statusholders || data.statusholders || data.statusholders)) + daysSince * SIM_INC_STATUS;
+    // Use base counts directly; continuous ticker will handle daily growth
+    const baseTotal  = Math.max(0, Number(data.total));
+    const baseStatus = Math.max(0, Number(data.statusholders));
 
     // Update UI
     const now = new Date();
@@ -243,9 +279,23 @@
     setText("#lastUpdated", "Laatste update: " + new Date(data.lastUpdated || now).toLocaleString('nl-NL'));
     setText("#todayTicker", `Vandaag: +${SIM_INC_REQUESTS} nieuwe aanvragen (schatting)`);
 
-    // Animate counters
-    animateNumber($("#totalCounter"), simulatedTotal, 2000);
-    animateNumber($("#statusCounter"), simulatedStatus, 2000);
+    // Initialize counters and start continuous ticker. First animate from 0 to base values,
+    // then transition into continuous update.
+    const totalEl = $("#totalCounter");
+    const statusEl = $("#statusCounter");
+    // Reset to base values (so we don't display stale values)
+    totalEl.textContent  = fmt.format(baseTotal);
+    statusEl.textContent = fmt.format(baseStatus);
+    // Animate from 0 to base over 1.6s for a smooth entry
+    animateNumber(totalEl, baseTotal, 1600);
+    animateNumber(statusEl, baseStatus, 1600);
+    // After animation completes, start continuous ticker
+    setTimeout(() => {
+      startContinuousTicker({ el: totalEl, baseToday: baseTotal, perDay: SIM_INC_REQUESTS });
+    }, 1600);
+    setTimeout(() => {
+      startContinuousTicker({ el: statusEl, baseToday: baseStatus, perDay: SIM_INC_STATUS });
+    }, 1600);
 
     // Charts and map
     await monthlyUpdate(data);
@@ -254,7 +304,7 @@
     buildMap(data.regions || FALLBACK.regions);
 
     // Save to cache
-    saveCached({ ...data, total: simulatedTotal, statusholders: simulatedStatus });
+    saveCached({ ...data, total: baseTotal, statusholders: baseStatus });
   }
 
   // Setup share links for X and Reddit

@@ -42,20 +42,23 @@
   </header>
 
   <main id="main" class="container">
-    <!-- DISCLIAMER -->
+    <!-- Disclaimer -->
     <section class="disclaimer" role="note" aria-label="Disclaimer">
       <strong>Disclaimer:</strong> Fictieve teller gebaseerd op IND/CBS data. Dagelijkse updates zijn schattingen; <em>officiële data wordt maandelijks geüpdatet</em>.
       Bronnen: <a href="https://www.ind.nl/over-ind/cijfers-publicaties" target="_blank" rel="noopener">IND</a>, <a href="https://opendata.cbs.nl" target="_blank" rel="noopener">CBS</a>.
     </section>
 
-    <!-- TOP COUNTERS -->
-    <section class="grid">
-      <article class="card span2" aria-labelledby="total-title">
-        <h2 id="total-title">Totaal asielaanvragen (2025)</h2>
-        <div class="counter big" id="totalCounter" aria-live="polite">0</div>
+    <!-- Hero counter prominently displaying the total requests -->
+    <section class="hero">
+      <div class="hero-inner" aria-labelledby="hero-title">
+        <h2 id="hero-title">Totaal asielaanvragen (2025)</h2>
+        <div class="counter big hero-counter" id="totalCounter" aria-live="polite">0</div>
         <div class="today-ticker" id="todayTicker" aria-live="polite">Vandaag: +68 nieuwe aanvragen (schatting)</div>
-      </article>
+      </div>
+    </section>
 
+    <!-- Counters for other metrics (statushouders and share links) -->
+    <section class="grid">
       <article class="card" aria-labelledby="status-title">
         <h3 id="status-title">Statushouders (verleende verblijfsvergunningen)</h3>
         <div class="counter" id="statusCounter" aria-live="polite">0</div>
