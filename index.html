@@ -4,13 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Asielcijfers NL</title>
-  <!-- Tailwind CSS voor responsieve lay-out -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
-  <!-- Chart.js voor grafieken -->
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-900">
-
   <!-- Header -->
   <header class="bg-white shadow">
     <div class="max-w-7xl mx-auto py-4 px-6">
@@ -20,8 +19,8 @@
 
   <!-- Main content -->
   <main class="max-w-7xl mx-auto p-4">
-    <!-- Hero / Teller -->
-    <section class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg shadow mb-8">
+    <!-- Hero -->
+    <section class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg shadow-md mb-8">
       <h2 class="text-xl font-medium text-gray-700 mb-2">Totaal asielaanvragen (2025)</h2>
       <div id="big-number" class="text-6xl font-extrabold mb-2">—</div>
       <p id="today-note" class="text-sm text-gray-600">Vandaag: —</p>
@@ -41,20 +40,16 @@
       </div>
     </section>
 
-    <!-- Tabs voor grafieken -->
+    <!-- Tabs -->
     <section>
       <div class="flex space-x-2 mb-4">
-        <button id="tab-origin" class="px-4 py-2 bg-white border border-gray-300 rounded-full text-gray-700 font-medium">Herkomst (dit jaar)</button>
-        <button id="tab-status" class="px-4 py-2 bg-white border border-gray-300 rounded-full text-gray-700 font-medium">Opname statushouders (meerjaren)</button>
+        <button id="tab-origin" class="px-4 py-2 border border-gray-300 rounded-full text-gray-700 bg-white font-medium">Herkomst (dit jaar)</button>
+        <button id="tab-status" class="px-4 py-2 border border-gray-300 rounded-full text-gray-700 bg-white font-medium">Opname statushouders (meerjaren)</button>
       </div>
-
-      <!-- Panel herkomstlanden -->
       <div id="panel-origin">
         <canvas id="originChart" height="220"></canvas>
         <p class="text-xs text-gray-500 mt-2">Bron: IND/UNHCR/CBS</p>
       </div>
-
-      <!-- Panel statushouders geschiedenis -->
       <div id="panel-status" class="hidden">
         <canvas id="statusChart" height="220"></canvas>
         <p class="text-xs text-gray-500 mt-2">Bron: CBS/IND</p>
@@ -69,10 +64,9 @@
     </div>
   </footer>
 
-  <!-- Script: laad data en teken grafieken -->
+  <!-- Scripts -->
   <script>
-    // Getallen formatteren
-    const fmt = n => {
+    const fmt = (n) => {
       if (n >= 1e6) return (n / 1e6).toFixed(1) + 'm';
       if (n >= 1e3) return (n / 1e3).toFixed(1) + 'k';
       return n.toLocaleString('nl-NL');
@@ -81,9 +75,8 @@
       const r = await fetch(url);
       return r.json();
     }
-
     (async () => {
-      // Hero teller vullen
+      // Hero
       const totals = await loadJSON('/data/totals.json');
       document.getElementById('big-number').textContent = fmt(totals.asielaanvragen);
       document.getElementById('today-note').textContent = `Vandaag: +${fmt(totals.vandaag_schatting)} (schatting)`;
@@ -91,12 +84,11 @@
       document.getElementById('toek').textContent = fmt(totals.toekenningen);
       document.getElementById('afw').textContent = fmt(totals.afwijzingen);
 
-      // Herkomstlanden (top-10) laden en tekenen
-      const origin = (await loadJSON('/data/origin_2025.json'))
-        .sort((a,b) => b.aantal - a.aantal).slice(0,10);
+      // Origin chart
+      const originData = (await loadJSON('/data/origin_2025.json')).sort((a,b) => b.aantal - a.aantal).slice(0,10);
       new Chart(document.getElementById('originChart'), {
         type: 'bar',
-        data: { labels: origin.map(d => d.land), datasets: [{ data: origin.map(d => d.aantal) }] },
+        data: { labels: originData.map(d => d.land), datasets: [{ data: originData.map(d => d.aantal) }] },
         options: {
           indexAxis: 'y',
           plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmt(c.raw) } } },
@@ -104,7 +96,7 @@
         }
       });
 
-      // Meerjaren-grafiek statushouders laden en tekenen
+      // Status chart
       const hist = await loadJSON('/data/statushouders_history.json');
       new Chart(document.getElementById('statusChart'), {
         type: 'line',
@@ -115,27 +107,34 @@
         }
       });
 
-      // Tabs wisselen
-      const tabO = document.getElementById('tab-origin');
-      const tabS = document.getElementById('tab-status');
-      const panelO = document.getElementById('panel-origin');
-      const panelS = document.getElementById('panel-status');
-      function showOrigin() {
-        panelO.classList.remove('hidden');
-        panelS.classList.add('hidden');
-        tabO.classList.add('bg-gray-200');
-        tabS.classList.remove('bg-gray-200');
+      // Tab toggling
+      const tabOrigin = document.getElementById('tab-origin');
+      const tabStatus = document.getElementById('tab-status');
+      const panelOrigin = document.getElementById('panel-origin');
+      const panelStatus = document.getElementById('panel-status');
+
+      function activateTab(originActive) {
+        if (originActive) {
+          panelOrigin.classList.remove('hidden');
+          panelStatus.classList.add('hidden');
+          tabOrigin.classList.add('bg-blue-500','text-white');
+          tabOrigin.classList.remove('bg-white','text-gray-700');
+          tabStatus.classList.add('bg-white','text-gray-700');
+          tabStatus.classList.remove('bg-blue-500','text-white');
+        } else {
+          panelStatus.classList.remove('hidden');
+          panelOrigin.classList.add('hidden');
+          tabStatus.classList.add('bg-blue-500','text-white');
+          tabStatus.classList.remove('bg-white','text-gray-700');
+          tabOrigin.classList.add('bg-white','text-gray-700');
+          tabOrigin.classList.remove('bg-blue-500','text-white');
+        }
       }
-      function showStatus() {
-        panelS.classList.remove('hidden');
-        panelO.classList.add('hidden');
-        tabS.classList.add('bg-gray-200');
-        tabO.classList.remove('bg-gray-200');
-      }
-      tabO.addEventListener('click', showOrigin);
-      tabS.addEventListener('click', showStatus);
-      // Start met herkomst
-      showOrigin();
+
+      tabOrigin.addEventListener('click', () => activateTab(true));
+      tabStatus.addEventListener('click', () => activateTab(false));
+      // Initial state
+      activateTab(true);
     })();
   </script>
 </body>
