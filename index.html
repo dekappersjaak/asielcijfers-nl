@@ -1,151 +1,131 @@
 <!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Asielcijfers NL</title>
-
-  <!-- SEO & Social -->
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Asielcijfers NL — heldere cijfers per gemeente</title>
   <meta name="description" content="Heldere cijfers over asielaanvragen en opname van statushouders per gemeente in Nederland." />
   <meta property="og:title" content="Asielcijfers NL" />
   <meta property="og:description" content="Interactieve kaart, uitleg in gewone taal en actuele totalen." />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="/assets/og-cover.png" />
+  <meta property="og:image" content="https://<jouwdomein.nl>/assets/og-cover.svg" />
   <meta name="twitter:card" content="summary_large_image" />
 
-  <!-- Analytics (GA4 placeholder) -->
-  <!-- Google tag (gtag.js) — vervang G-XXXXXXX door jouw ID -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="" crossorigin=""/>
+  <link rel="stylesheet" href="/style.css"/>
+
+  <!-- Site icons & manifest -->
+  <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#0a0f1a">
+
+  <!-- AdSense (laadt, maar toont pas na consent) -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-<TODO:YOUR-ADSENSE-CLIENT>" crossorigin="anonymous"></script>
+
+  <!-- GA4 + Consent Mode v2 (standaard denied, cookies.js zet update) -->
+  <!-- Kies óf GA4 óf Plausible; niet allebei. -->
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-<TODO:GA-ID>"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    /* Consent mode default = denied; wordt door cookies.js geüpdatet */
+    function gtag(){dataLayer.push(arguments);} 
     gtag('consent', 'default', {
-      'ad_storage':'denied',
-      'analytics_storage':'denied',
-      'ad_user_data':'denied',
-      'ad_personalization':'denied'
+      'ad_storage': 'denied',
+      'analytics_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied'
     });
     gtag('js', new Date());
-    gtag('config', 'G-XXXXXXX');
+    gtag('config', 'G-<TODO:GA-ID>');
   </script>
 
-  <!-- Leaflet CSS (kaart) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+4JqR0C8C7hFh3/6/5bWFRyQ8b0G6C2R1jRFaf0u8=" crossorigin="anonymous" />
-  <link rel="stylesheet" href="/style.css" />
+  <!-- Plausible (alternatief, cookieloos) -->
+  <!-- <script defer data-domain="<jouwdomein.nl>" src="https://plausible.io/js/script.js"></script> -->
 </head>
 <body>
-  <!-- Top bar -->
-  <header class="topbar">
-    <div class="container">
-      <div class="brand">Asielcijfers NL</div>
-      <nav class="nav">
-        <a href="/privacy.html" class="btn ghost">Privacy &amp; cookies</a>
-        <button class="btn ghost" data-open="defs">Uitleg begrippen</button>
-      </nav>
-    </div>
+  <header class="site-header container">
+    <h1>Asielcijfers NL</h1>
+    <nav aria-label="Hoofdmenu">
+      <a href="/" aria-current="page">Home</a>
+      <a href="/privacy.html">Privacy</a>
+    </nav>
   </header>
 
-  <!-- Hero met centrale teller -->
-  <section class="hero gradient">
-    <div class="container hero__inner">
-      <div class="hero__kpi">
-        <h1>Totaal asielaanvragen</h1>
-        <div class="kpi" id="total-count">0</div>
-        <p class="sub">Laatst bijgewerkt: <span id="last-updated">—</span></p>
+  <!-- Top advertentie -->
+  <div class="container ad-wrap" aria-label="Advertentie boven">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-<TODO:YOUR-ADSENSE-CLIENT>"
+         data-ad-slot="<TODO:AD-SLOT-TOP>"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
+  </div>
+
+  <main class="container">
+    <section class="hero">
+      <p class="tag">Actuele totalen</p>
+      <div class="kpis">
+        <div class="kpi" role="status" aria-live="polite">
+          <div class="kpi-label">Totaal asielaanvragen</div>
+          <div class="kpi-value" id="total-count">0</div>
+          <div class="kpi-meta">Laatst bijgewerkt: <span id="last-updated">—</span></div>
+        </div>
+        <div class="mini-kpis">
+          <div class="mini"><span>Week</span><strong id="s-week">—</strong></div>
+          <div class="mini"><span>Maand</span><strong id="s-month">—</strong></div>
+          <div class="mini"><span>Jaar</span><strong id="s-year">—</strong></div>
+        </div>
       </div>
-
-      <!-- Info-paneel + Advertentie -->
-      <aside class="hero__panel">
-        <h2>Begrippen</h2>
-        <div class="chip-row">
-          <button class="chip" data-open="defs" data-key="asielaanvraag">Asielaanvraag</button>
-          <button class="chip" data-open="defs" data-key="statushouder">Statushouder</button>
-          <button class="chip" data-open="defs" data-key="opname">Opname</button>
-        </div>
-
-        <!-- Ad boven de vouw (vervang client/slot) -->
-        <div class="ad ad--hero" id="ad-top">
-          <!--
-          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXX" crossorigin="anonymous"></script>
-          <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXX" data-ad-slot="YYYY" data-ad-format="auto" data-full-width-responsive="true"></ins>
-          <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
-          -->
-          <span class="ad__label">Advertentie</span>
-        </div>
-      </aside>
-    </div>
-  </section>
-
-  <!-- Dashboard -->
-  <main class="container grid-2">
-    <section class="card">
-      <header class="card__header">
-        <h3>Opname statushouders per gemeente</h3>
-        <small class="muted">Klik op een gemeente voor de waarde</small>
-      </header>
-      <div id="map"></div>
-      <div class="legend" id="legend"></div>
     </section>
 
-    <section class="card">
-      <header class="card__header">
-        <h3>Verdeling &amp; overzicht</h3>
-      </header>
+    <section class="map-section">
+      <h2>Per gemeente</h2>
+      <div id="map" aria-label="Kaart van Nederland met gemeentecijfers"></div>
+      <p class="map-note">Kaart tiles &copy; OpenStreetMap — data © contributors.</p>
+    </section>
 
-      <div class="stats">
-        <div class="stat">
-          <div class="stat__label">Asielaanvragen (week)</div>
-          <div class="stat__value" id="s-week">—</div>
-        </div>
-        <div class="stat">
-          <div class="stat__label">Asielaanvragen (maand)</div>
-          <div class="stat__value" id="s-month">—</div>
-        </div>
-        <div class="stat">
-          <div class="stat__label">Statushouders (jaar)</div>
-          <div class="stat__value" id="s-year">—</div>
-        </div>
+    <!-- Midden advertentie -->
+    <div class="ad-wrap" aria-label="Advertentie midden">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-<TODO:YOUR-ADSENSE-CLIENT>"
+           data-ad-slot="<TODO:AD-SLOT-MID>"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
+    </div>
+
+    <section class="sponsors">
+      <h2>Sponsoren</h2>
+      <div class="cards">
+        <!-- Voorbeeld sponsor -->
+        <a class="card" href="<TODO:link>" rel="sponsored noopener" target="_blank" aria-label="Sponsor voorbeeld">
+          <img src="/assets/og-cover.svg" alt="Sponsorlogo (voorbeeld)"/>
+          <span>Jouw logo hier</span>
+        </a>
       </div>
+      <p class="muted">Sponsor worden? Mail <a href="mailto:info@<jouwdomein.nl>">info@<jouwdomein.nl></a>.</p>
+    </section>
 
-      <!-- Ad middenpagina -->
-      <div class="ad" id="ad-mid"><span class="ad__label">Advertentie</span></div>
-
-      <!-- Nieuwsbrief (Netlify Forms) -->
-      <div class="tips">
-        <form name="nieuwsbrief" method="POST" data-netlify="true" class="nl-form">
-          <input type="email" name="email" placeholder="Jouw e-mail" required />
-          <button type="submit" class="btn">Aanmelden nieuwsbrief</button>
-        </form>
+    <section class="newsletter">
+      <h2>Blijf op de hoogte</h2>
+      <form name="nieuwsbrief" method="POST" data-netlify="true" style="display:flex; gap:8px;" aria-label="Aanmelden nieuwsbrief">
+        <input type="email" name="email" placeholder="Jouw e-mail" required aria-label="E-mailadres"/>
+        <button type="submit" class="btn" aria-label="Aanmelden">Aanmelden</button>
+      </form>
+      <div class="donate">
+        <a class="btn outline" href="<TODO:donatie-url>" target="_blank" rel="noopener">Doneren</a>
       </div>
     </section>
   </main>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container footer__inner">
-      <small>© <span id="year"></span> Asielcijfers NL — Bron: eigen dataset / openbare bronnen</small>
-      <small><a href="/privacy.html">Privacy &amp; cookies</a></small>
-    </div>
+  <footer class="site-footer container">
+    <small>&copy; <span id="year"></span> Asielcijfers NL • <a href="/privacy.html">Privacy & Cookies</a></small>
   </footer>
 
-  <!-- Modal met definities -->
-  <dialog id="defs" class="modal">
-    <form method="dialog" class="modal__card">
-      <header class="modal__header">
-        <h3>Begrippenlijst</h3>
-        <button class="btn icon" value="cancel" aria-label="Sluiten">✕</button>
-      </header>
-      <div class="modal__content" id="defs-content"></div>
-      <footer class="modal__footer">
-        <button class="btn" value="cancel">Sluiten</button>
-      </footer>
-    </form>
-  </dialog>
-
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1j7kGStbKxH8xN3g7H1iQJQp1v7FoM3E1/9w+4Ww=" crossorigin="anonymous"></script>
-
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="" crossorigin=""></script>
   <script src="/script.js"></script>
   <script src="/cookies.js"></script>
 </body>
