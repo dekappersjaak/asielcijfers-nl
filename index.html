@@ -1,141 +1,152 @@
 <!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Asielcijfers NL</title>
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- SEO & Social -->
+  <meta name="description" content="Heldere cijfers over asielaanvragen en opname van statushouders per gemeente in Nederland." />
+  <meta property="og:title" content="Asielcijfers NL" />
+  <meta property="og:description" content="Interactieve kaart, uitleg in gewone taal en actuele totalen." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/assets/og-cover.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Analytics (GA4 placeholder) -->
+  <!-- Google tag (gtag.js) — vervang G-XXXXXXX door jouw ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    /* Consent mode default = denied; wordt door cookies.js geüpdatet */
+    gtag('consent', 'default', {
+      'ad_storage':'denied',
+      'analytics_storage':'denied',
+      'ad_user_data':'denied',
+      'ad_personalization':'denied'
+    });
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXX');
+  </script>
+
+  <!-- Leaflet CSS (kaart) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+4JqR0C8C7hFh3/6/5bWFRyQ8b0G6C2R1jRFaf0u8=" crossorigin="anonymous" />
+  <link rel="stylesheet" href="/style.css" />
 </head>
-<body class="bg-gray-50 text-gray-900">
-  <!-- Header -->
-  <header class="bg-white shadow">
-    <div class="max-w-7xl mx-auto py-4 px-6">
-      <h1 class="text-2xl font-bold">Asielcijfers NL</h1>
+<body>
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">Asielcijfers NL</div>
+      <nav class="nav">
+        <a href="/privacy.html" class="btn ghost">Privacy &amp; cookies</a>
+        <button class="btn ghost" data-open="defs">Uitleg begrippen</button>
+      </nav>
     </div>
   </header>
 
-  <!-- Main content -->
-  <main class="max-w-7xl mx-auto p-4">
-    <!-- Hero -->
-    <section class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg shadow-md mb-8">
-      <h2 class="text-xl font-medium text-gray-700 mb-2">Totaal asielaanvragen (2025)</h2>
-      <div id="big-number" class="text-6xl font-extrabold mb-2">—</div>
-      <p id="today-note" class="text-sm text-gray-600">Vandaag: —</p>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-        <div class="p-4 bg-white rounded-lg shadow">
-          <p class="text-sm text-gray-500">Statushouders (YTD)</p>
-          <p id="ytd" class="text-2xl font-semibold">—</p>
-        </div>
-        <div class="p-4 bg-white rounded-lg shadow">
-          <p class="text-sm text-gray-500">Toekenningen</p>
-          <p id="toek" class="text-2xl font-semibold">—</p>
-        </div>
-        <div class="p-4 bg-white rounded-lg shadow">
-          <p class="text-sm text-gray-500">Afwijzingen</p>
-          <p id="afw" class="text-2xl font-semibold">—</p>
-        </div>
+  <!-- Hero met centrale teller -->
+  <section class="hero gradient">
+    <div class="container hero__inner">
+      <div class="hero__kpi">
+        <h1>Totaal asielaanvragen</h1>
+        <div class="kpi" id="total-count">0</div>
+        <p class="sub">Laatst bijgewerkt: <span id="last-updated">—</span></p>
       </div>
+
+      <!-- Info-paneel + Advertentie -->
+      <aside class="hero__panel">
+        <h2>Begrippen</h2>
+        <div class="chip-row">
+          <button class="chip" data-open="defs" data-key="asielaanvraag">Asielaanvraag</button>
+          <button class="chip" data-open="defs" data-key="statushouder">Statushouder</button>
+          <button class="chip" data-open="defs" data-key="opname">Opname</button>
+        </div>
+
+        <!-- Ad boven de vouw (vervang client/slot) -->
+        <div class="ad ad--hero" id="ad-top">
+          <!--
+          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXX" crossorigin="anonymous"></script>
+          <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXX" data-ad-slot="YYYY" data-ad-format="auto" data-full-width-responsive="true"></ins>
+          <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
+          -->
+          <span class="ad__label">Advertentie</span>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Dashboard -->
+  <main class="container grid-2">
+    <section class="card">
+      <header class="card__header">
+        <h3>Opname statushouders per gemeente</h3>
+        <small class="muted">Klik op een gemeente voor de waarde</small>
+      </header>
+      <div id="map"></div>
+      <div class="legend" id="legend"></div>
     </section>
 
-    <!-- Tabs -->
-    <section>
-      <div class="flex space-x-2 mb-4">
-        <button id="tab-origin" class="px-4 py-2 border border-gray-300 rounded-full text-gray-700 bg-white font-medium">Herkomst (dit jaar)</button>
-        <button id="tab-status" class="px-4 py-2 border border-gray-300 rounded-full text-gray-700 bg-white font-medium">Opname statushouders (meerjaren)</button>
+    <section class="card">
+      <header class="card__header">
+        <h3>Verdeling &amp; overzicht</h3>
+      </header>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat__label">Asielaanvragen (week)</div>
+          <div class="stat__value" id="s-week">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat__label">Asielaanvragen (maand)</div>
+          <div class="stat__value" id="s-month">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat__label">Statushouders (jaar)</div>
+          <div class="stat__value" id="s-year">—</div>
+        </div>
       </div>
-      <div id="panel-origin">
-        <canvas id="originChart" height="220"></canvas>
-        <p class="text-xs text-gray-500 mt-2">Bron: IND/UNHCR/CBS</p>
-      </div>
-      <div id="panel-status" class="hidden">
-        <canvas id="statusChart" height="220"></canvas>
-        <p class="text-xs text-gray-500 mt-2">Bron: CBS/IND</p>
+
+      <!-- Ad middenpagina -->
+      <div class="ad" id="ad-mid"><span class="ad__label">Advertentie</span></div>
+
+      <!-- Nieuwsbrief (Netlify Forms) -->
+      <div class="tips">
+        <form name="nieuwsbrief" method="POST" data-netlify="true" class="nl-form">
+          <input type="email" name="email" placeholder="Jouw e-mail" required />
+          <button type="submit" class="btn">Aanmelden nieuwsbrief</button>
+        </form>
       </div>
     </section>
   </main>
 
   <!-- Footer -->
-  <footer class="bg-white mt-12 py-4">
-    <div class="max-w-7xl mx-auto text-sm text-gray-500 px-4">
-      <p>Data gebaseerd op officiële cijfers van IND en CBS; schattingen worden separaat gemarkeerd.</p>
+  <footer class="footer">
+    <div class="container footer__inner">
+      <small>© <span id="year"></span> Asielcijfers NL — Bron: eigen dataset / openbare bronnen</small>
+      <small><a href="/privacy.html">Privacy &amp; cookies</a></small>
     </div>
   </footer>
 
-  <!-- Scripts -->
-  <script>
-    const fmt = (n) => {
-      if (n >= 1e6) return (n / 1e6).toFixed(1) + 'm';
-      if (n >= 1e3) return (n / 1e3).toFixed(1) + 'k';
-      return n.toLocaleString('nl-NL');
-    };
-    async function loadJSON(url) {
-      const r = await fetch(url);
-      return r.json();
-    }
-    (async () => {
-      // Hero
-      const totals = await loadJSON('/data/totals.json');
-      document.getElementById('big-number').textContent = fmt(totals.asielaanvragen);
-      document.getElementById('today-note').textContent = `Vandaag: +${fmt(totals.vandaag_schatting)} (schatting)`;
-      document.getElementById('ytd').textContent = fmt(totals.statushouders_ytd);
-      document.getElementById('toek').textContent = fmt(totals.toekenningen);
-      document.getElementById('afw').textContent = fmt(totals.afwijzingen);
+  <!-- Modal met definities -->
+  <dialog id="defs" class="modal">
+    <form method="dialog" class="modal__card">
+      <header class="modal__header">
+        <h3>Begrippenlijst</h3>
+        <button class="btn icon" value="cancel" aria-label="Sluiten">✕</button>
+      </header>
+      <div class="modal__content" id="defs-content"></div>
+      <footer class="modal__footer">
+        <button class="btn" value="cancel">Sluiten</button>
+      </footer>
+    </form>
+  </dialog>
 
-      // Origin chart
-      const originData = (await loadJSON('/data/origin_2025.json')).sort((a,b) => b.aantal - a.aantal).slice(0,10);
-      new Chart(document.getElementById('originChart'), {
-        type: 'bar',
-        data: { labels: originData.map(d => d.land), datasets: [{ data: originData.map(d => d.aantal) }] },
-        options: {
-          indexAxis: 'y',
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmt(c.raw) } } },
-          scales: { x: { ticks: { callback: v => fmt(v) } } }
-        }
-      });
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1j7kGStbKxH8xN3g7H1iQJQp1v7FoM3E1/9w+4Ww=" crossorigin="anonymous"></script>
 
-      // Status chart
-      const hist = await loadJSON('/data/statushouders_history.json');
-      new Chart(document.getElementById('statusChart'), {
-        type: 'line',
-        data: { labels: hist.map(d => d.jaar), datasets: [{ data: hist.map(d => d.opgenomen), fill: false, tension: 0.3 }] },
-        options: {
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmt(c.raw) } } },
-          scales: { y: { ticks: { callback: v => fmt(v) } } }
-        }
-      });
-
-      // Tab toggling
-      const tabOrigin = document.getElementById('tab-origin');
-      const tabStatus = document.getElementById('tab-status');
-      const panelOrigin = document.getElementById('panel-origin');
-      const panelStatus = document.getElementById('panel-status');
-
-      function activateTab(originActive) {
-        if (originActive) {
-          panelOrigin.classList.remove('hidden');
-          panelStatus.classList.add('hidden');
-          tabOrigin.classList.add('bg-blue-500','text-white');
-          tabOrigin.classList.remove('bg-white','text-gray-700');
-          tabStatus.classList.add('bg-white','text-gray-700');
-          tabStatus.classList.remove('bg-blue-500','text-white');
-        } else {
-          panelStatus.classList.remove('hidden');
-          panelOrigin.classList.add('hidden');
-          tabStatus.classList.add('bg-blue-500','text-white');
-          tabStatus.classList.remove('bg-white','text-gray-700');
-          tabOrigin.classList.add('bg-white','text-gray-700');
-          tabOrigin.classList.remove('bg-blue-500','text-white');
-        }
-      }
-
-      tabOrigin.addEventListener('click', () => activateTab(true));
-      tabStatus.addEventListener('click', () => activateTab(false));
-      // Initial state
-      activateTab(true);
-    })();
-  </script>
+  <script src="/script.js"></script>
+  <script src="/cookies.js"></script>
 </body>
 </html>
