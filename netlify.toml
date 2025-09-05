@@ -1,0 +1,38 @@
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Content-Security-Policy = """
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagservices.com https://www.googletagmanager.com https://www.gstatic.com https://unpkg.com;
+      style-src 'self' 'unsafe-inline' https://unpkg.com;
+      img-src 'self' data: https://*.googleusercontent.com https://pagead2.googlesyndication.com https://tpc.googlesyndication.com;
+      font-src 'self' data:;
+      connect-src 'self';
+      frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+    """
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/data/*"
+  [headers.values]
+    Cache-Control = "public, max-age=300"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
