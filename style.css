@@ -1,7 +1,67 @@
-/*
- * Light theme and UI for Asielcijfers NL
- * This file mirrors the content of styles.css to ensure that
- * both style.css and styles.css provide the same light theme.
- */
-
-@import url("styles.css");
+:root{
+  --ink:#0f172a; --bg:#0b1020; --card:#121936; --muted:#8aa0ff;
+  --brand:#4be1c3; --brand-2:#ff6b6b; --brand-3:#ffb703; --white:#fff;
+}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0; font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial; color:var(--white); background:var(--bg)}
+a{color:#b6c0ff; text-decoration:none}
+.container{max-width:1200px; margin-inline:auto; padding:0 20px}
+.grid-2{display:grid; gap:20px; grid-template-columns:1.2fr 1fr}
+@media (max-width:960px){ .grid-2{grid-template-columns:1fr} }
+.card{background:var(--card); border-radius:16px; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,.35)}
+.card__header{padding:16px 20px; border-bottom:1px solid rgba(255,255,255,.08)}
+.card__header h3{margin:0}
+.muted{color:var(--muted)}
+.topbar{position:sticky; top:0; z-index:20; backdrop-filter:saturate(120%) blur(8px);
+  background:rgba(11,16,32,.75); border-bottom:1px solid rgba(255,255,255,.05)}
+.topbar .container{display:flex; align-items:center; justify-content:space-between; padding:12px 20px}
+.brand{font-weight:800; letter-spacing:.2px}
+.nav{display:flex; gap:12px}
+.nav .btn.ghost{background:transparent; border:1px solid rgba(255,255,255,.2); color:var(--white)}
+.nav .btn.ghost:hover{border-color:var(--brand)}
+.link{color:#c6d0ff; margin-right:8px}
+.hero{padding:44px 0 24px; position:relative; overflow:hidden}
+.gradient{
+  background: radial-gradient(900px 600px at 15% -20%, rgba(75,225,195,.35), transparent 60%),
+              radial-gradient(900px 600px at 85% 10%, rgba(255,107,107,.28), transparent 60%),
+              linear-gradient(180deg, #0e1430 0%, #0b1020 60%);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.hero__inner{display:grid; gap:24px; grid-template-columns:1fr 420px}
+@media (max-width:1000px){ .hero__inner{grid-template-columns:1fr} }
+.hero__kpi{text-align:center}
+.hero__kpi h1{margin:0 0 12px; font-size:22px; font-weight:700; color:#dbe4ff}
+.kpi{
+  font-size:72px; font-weight:900; letter-spacing:1px; line-height:1; padding:16px 24px; display:inline-block;
+  background:linear-gradient(90deg, var(--brand-3), var(--brand)); -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:0 0 22px rgba(255,183,3,.25); transform:scale(0.98); animation:kpi-in .8s ease-out forwards
+}
+@keyframes kpi-in{to{transform:scale(1)}}
+.sub{color:#c6d0ff}
+.hero__panel{background:rgba(18,25,54,.8); padding:16px; border-radius:16px; border:1px solid rgba(255,255,255,.08)}
+.chip-row{display:flex; gap:10px; flex-wrap:wrap}
+.chip{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.15); color:var(--white); padding:8px 12px; border-radius:999px; cursor:pointer}
+.chip:hover{border-color:var(--brand)}
+.btn{background:linear-gradient(90deg, var(--brand), var(--brand-2)); color:#081225; border:none; padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:700}
+.btn.icon{background:transparent; color:var(--white); border:1px solid rgba(255,255,255,.2)}
+.btn.icon:hover{border-color:var(--brand)}
+#ad-top,#ad-mid{min-height:120px; display:grid; place-items:center; border:1px dashed rgba(255,255,255,.25); border-radius:12px; margin-top:14px}
+.ad__label{font-size:12px; color:#b6c0ff}
+#map{height:420px}
+.legend{display:flex; gap:6px; align-items:center; padding:12px 16px; border-top:1px solid rgba(255,255,255,.08)}
+.legend .sw{width:20px; height:12px; border-radius:3px; display:inline-block}
+.stats{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:16px}
+@media (max-width:600px){ .stats{grid-template-columns:1fr} }
+.stat{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:12px}
+.stat__label{font-size:12px; color:#b6c0ff}
+.stat__value{font-size:28px; font-weight:800}
+.form-inline{display:flex; gap:8px; padding:0 16px 16px}
+.form-inline input{flex:1; border-radius:10px; border:1px solid rgba(255,255,255,.2); padding:10px; background:rgba(255,255,255,.06); color:#fff}
+.footer{border-top:1px solid rgba(255,255,255,.08); margin-top:32px}
+.footer__inner{display:flex; justify-content:space-between; gap:16px; padding:16px 0}
+.modal{border:none; padding:0; background:transparent}
+.modal[open]{display:grid; place-items:center}
+.modal__card{width:min(700px,92vw); background:var(--card); border:1px solid rgba(255,255,255,.12); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.5); overflow:hidden}
+.modal__header,.modal__footer{display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.08)}
+.modal__footer{border-top:1px solid rgba(255,255,255,.08); border-bottom:none}
+.modal__content{padding:16px}
