@@ -1,0 +1,11 @@
+{
+  "name": "Asielcijfers NL",
+  "short_name": "Asielcijfers",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f1a",
+  "theme_color": "#0a0f1a",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
